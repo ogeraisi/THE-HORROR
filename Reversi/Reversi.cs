@@ -291,12 +291,32 @@ namespace Reversi
                 }
             }
 
-            //// Start a separate thread to perform the computer's move.
-            //this.calculateComputerMoveThread = new Thread(new ThreadStart(this.CalculateComputerMove));
-            //this.calculateComputerMoveThread.IsBackground = true;
-            //this.calculateComputerMoveThread.Priority = System.Threading.ThreadPriority.Lowest;
-            //this.calculateComputerMoveThread.Name = "Calculate Computer Move";
-            //this.calculateComputerMoveThread.Start();
+            // If the current color is under computer control,
+            // set up for a computer move.
+            if (this.IsComputerPlayer(this.currentColor))
+            {
+                // Set the game state.
+                this.gameState = ReversiForm.GameState.InComputerMove;
+
+                // Start a separate thread to perform the computer's move.
+                this.calculateComputerMoveThread = new Thread(new ThreadStart(this.CalculateComputerMove));
+                this.calculateComputerMoveThread.IsBackground = true;
+                this.calculateComputerMoveThread.Priority = System.Threading.ThreadPriority.Lowest;
+                this.calculateComputerMoveThread.Name = "Calculate Computer Move";
+                this.calculateComputerMoveThread.Start();
+            }
+            else // Otherwise, set up for a user move.
+            {
+                // Set the game state.
+                this.gameState = ReversiForm.GameState.InPlayerMove;
+
+                // Show valid moves, if that option is active.
+                if (this.options.ShowValidMoves)
+                {
+                    this.HighlightValidMoves();
+                    this.squaresPanel.Refresh();
+                }
+            }
         }
 
         //
@@ -648,7 +668,7 @@ namespace Reversi
             // Save the current program settings.
             this.SaveProgramSettings();
         }
-        
+
         //
         // Handles a window move.
         //
