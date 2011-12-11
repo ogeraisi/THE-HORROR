@@ -278,6 +278,19 @@ namespace Reversi
         //
         private void StartTurn()
         {
+            // If the current player cannot make a valid move, forfeit the turn.
+            if (!this.board.HasAnyValidMove(this.currentColor))
+            {
+                this.currentColor *= -1;
+
+                // If the original player cannot make a valid move either, the game is over.
+                if (!this.board.HasAnyValidMove(this.currentColor))
+                {
+                    this.EndGame();
+                    return;
+                }
+            }
+
             //// Start a separate thread to perform the computer's move.
             //this.calculateComputerMoveThread = new Thread(new ThreadStart(this.CalculateComputerMove));
             //this.calculateComputerMoveThread.IsBackground = true;
