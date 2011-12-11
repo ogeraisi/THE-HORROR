@@ -47,6 +47,7 @@ namespace Reversi
         // Game parameters.
         private GameState gameState;
         private int currentColor;
+        private int moveNumber;
 
         // This timer is used to animate moves during game play.
         private System.Windows.Forms.Timer animationTimer = new System.Windows.Forms.Timer();
@@ -85,18 +86,20 @@ namespace Reversi
         {
             public Board board;
             public int currentColor;
+            public int lastMoveColor;
             public ListViewItem moveListItem;
 
-            public MoveRecord(Board board, int currentColor, ListViewItem moveListItem)
+            public MoveRecord(Board board, int currentColor, int lastMoveColor, ListViewItem moveListItem)
             {
                 this.board = new Board(board);
                 this.currentColor = currentColor;
+                this.lastMoveColor = lastMoveColor;
                 this.moveListItem = moveListItem;
             }
         }
 
         // Defines an array for storing the move history.
-        private ArrayList moveHistory;
+        private MoveRecord previousBoardState;
 
         // Used to track which player made the last move.
         private int lastMoveColor;
@@ -235,6 +238,31 @@ namespace Reversi
         //
         private void StartGame(bool isRestart = false)
         {
+            // Initialize the move list.
+            this.moveNumber = 1;
+            this.moveListView.Items.Clear();
+            this.moveListView.Refresh();
+
+            // Initialize the last move color.
+            // Can't rely on current color as the opponent
+            // might had to forfeit.
+            this.lastMoveColor = Board.Empty;
+
+            // Set the first player.
+            this.currentColor = this.options.FirstMove;
+
+            // Initialize the move history.
+            this.previousBoardState = null;
+
+            // Initialize the board.
+            this.board.SetForNewGame();
+            this.UpdateBoardDisplay();
+
+            // Clear the suspend computer play flag.
+            this.isComputerPlaySuspended = false;
+
+            // Start the first turn.
+            this.StartTurn();
         }
 
         //
