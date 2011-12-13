@@ -268,12 +268,6 @@ namespace Reversi
         //
         private void EndGame(bool isResignation = false)
         {
-            // Set the game state.
-            this.gameState = ReversiForm.GameState.MoveCompleted;
-
-            // Switch players and start the next turn.
-            this.currentColor *= -1;
-            this.StartTurn();
         }
 
         //
@@ -412,6 +406,12 @@ namespace Reversi
         //
         private void EndMove()
         {
+            // Set the game state.
+            this.gameState = ReversiForm.GameState.MoveCompleted;
+
+            // Switch players and start the next turn.
+            this.currentColor *= -1;
+            this.StartTurn();
         }
 
         #region Animation Handlers
