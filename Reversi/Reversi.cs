@@ -87,19 +87,17 @@ namespace Reversi
             public Board board;
             public int currentColor;
             public int lastMoveColor;
-            public ListViewItem moveListItem;
 
-            public MoveRecord(Board board, int currentColor, int lastMoveColor, ListViewItem moveListItem)
+            public MoveRecord(Board board, int currentColor, int lastMoveColor)
             {
                 this.board = new Board(board);
                 this.currentColor = currentColor;
                 this.lastMoveColor = lastMoveColor;
-                this.moveListItem = moveListItem;
             }
         }
 
         // Defines an array for storing the move history.
-        private MoveRecord previousBoardState;
+        private MoveRecord previousGameState;
 
         // Used to track which player made the last move.
         private int lastMoveColor;
@@ -252,7 +250,7 @@ namespace Reversi
             this.currentColor = this.options.FirstMove;
 
             // Initialize the move history.
-            this.previousBoardState = null;
+            this.previousGameState = null;
 
             // Initialize the board.
             this.board.SetForNewGame();
@@ -333,6 +331,73 @@ namespace Reversi
         //
         private void MakeMove(int row, int col)
         {
+            // Save the current game state.
+            previousGameState = new MoveRecord(board, currentColor, lastMoveColor);
+
+            // Log the move.
+            logMove(row, col);
+
+            // Make the move on the board.
+            board.MakeMove(currentColor, row, col);
+
+            // If the animate move option is active,
+            // set up animation for the affected discs.
+			if (options.AnimateMoves)
+                setSquaresForAnimation(row, col);
+
+            // Update the display to reflect the board changes.
+            UpdateBoardDisplay();
+
+            // Update parameters.
+            lastMoveColor = currentColor;
+            moveNumber++;
+
+            // If the animate moves option is active, start the animation.
+            // Otherwise, end the move.
+            if (options.AnimateMoves)
+            {
+                gameState = ReversiForm.GameState.InMoveAnimation;
+                animationTimer.Start();
+            }
+            else EndMove();
+        }
+
+        private void logMove(int row, int col)
+        {
+            // Add the move to the move list.
+            string color = "Black";
+            if (this.currentColor == Board.White)
+                color = "White";
+            string[] subItems =
+			{
+				String.Empty,
+                this.moveNumber.ToString(),
+				color,
+				(alpha[col] + (row + 1).ToString())
+			};
+            ListViewItem listItem = new ListViewItem(subItems);
+            this.moveListView.Items.Add(listItem);
+
+            // If necessary, scroll the list to bring the last move into view.
+            this.moveListView.EnsureVisible(this.moveListView.Items.Count - 1);
+        }
+
+        void setSquaresForAnimation(int row, int col)
+        {
+            for (int i = 0; i < 10; ++i)
+                for (int j = 0; j < 10; ++j)
+                {
+                    // Mark the newly added disc.
+                    if (i == row && j == col)
+                        this.squareControls[i, j].IsNew = true;
+                    else
+                    {
+                        // Initialize animation for the discs that were
+                        // flipped.
+                        if (this.board.GetSquareContents(i, j) != this.previousGameState.board.GetSquareContents(i, j))
+                            this.squareControls[i, j].AnimationCounter = SquareControl.AnimationStart;
+                    }
+                }
         }
 
         //
@@ -405,9 +470,12 @@ namespace Reversi
         private void MakePlayerMove(int row, int col)
         {
             // Allow the computer to resume play.
-            this.isComputerPlaySuspended = false;
+            // This might happen in case of an undo/redo turn.
+            if (this.isComputerPlaySuspended)
+                this.isComputerPlaySuspended = false;
 
-            // Make the move.
+            // Clear any board square highlighting and make the move.
+            this.UnHighlightSquares();
             this.MakeMove(row, col);
         }
 
