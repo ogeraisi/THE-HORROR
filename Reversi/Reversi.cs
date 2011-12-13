@@ -266,10 +266,10 @@ namespace Reversi
         //
         // Ends the current game, optionally by player resignation.
         //
-        private void EndGame()
+        private void EndGame(bool isResignation = false)
         {
             // Set the game state.
-            this.gameState = ReversiForm.GameState..MoveCompleted;
+            this.gameState = ReversiForm.GameState.MoveCompleted;
 
             // Switch players and start the next turn.
             this.currentColor *= -1;
