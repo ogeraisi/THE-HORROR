@@ -378,21 +378,21 @@ namespace Reversi
             // undoMoveToolBarButton
             // 
             this.undoMoveToolBarButton.Enabled = false;
-            this.undoMoveToolBarButton.ImageIndex = 2;
+            this.undoMoveToolBarButton.ImageIndex = 3;
             this.undoMoveToolBarButton.Name = "undoMoveToolBarButton";
             this.undoMoveToolBarButton.ToolTipText = "Undo Move";
             // 
             // resumePlayToolBarButton
             // 
             this.resumePlayToolBarButton.Enabled = false;
-            this.resumePlayToolBarButton.ImageIndex = 3;
+            this.resumePlayToolBarButton.ImageIndex = 4;
             this.resumePlayToolBarButton.Name = "resumePlayToolBarButton";
             this.resumePlayToolBarButton.ToolTipText = "Resume Play";
             // 
             // redoMoveToolBarButton
             // 
             this.redoMoveToolBarButton.Enabled = false;
-            this.redoMoveToolBarButton.ImageIndex = 4;
+            this.redoMoveToolBarButton.ImageIndex = 5;
             this.redoMoveToolBarButton.Name = "redoMoveToolBarButton";
             this.redoMoveToolBarButton.ToolTipText = "Redo Move";
             // 
@@ -405,6 +405,8 @@ namespace Reversi
             this.playImageList.Images.SetKeyName(2, "");
             this.playImageList.Images.SetKeyName(3, "");
             this.playImageList.Images.SetKeyName(4, "");
+            this.playImageList.Images.SetKeyName(5, "");
+            this.playImageList.Images.SetKeyName(6, "");
             // 
             // ReversiForm
             // 
