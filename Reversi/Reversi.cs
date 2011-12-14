@@ -266,8 +266,13 @@ namespace Reversi
         //
         // Ends the current game, optionally by player resignation.
         //
-        private void EndGame(bool isResignation = false)
+        private void EndGame(/*bool isResignation = false*/)
         {
+            // Stop the game timer.
+            this.animationTimer.Stop();
+
+            // Set the game state.
+            this.gameState = ReversiForm.GameState.GameOver;
         }
 
         //
@@ -824,7 +829,7 @@ namespace Reversi
             this.UpdateBoardDisplay();
 
             // End the game with the resignation flag set.
-            this.EndGame(true);
+            this.EndGame(/*true*/);
         }
 
         //
