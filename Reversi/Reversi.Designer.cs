@@ -356,6 +356,7 @@ namespace Reversi
             this.playToolBar.ShowToolTips = true;
             this.playToolBar.Size = new System.Drawing.Size(472, 26);
             this.playToolBar.TabIndex = 1;
+            this.playToolBar.ButtonClick += new System.Windows.Forms.ToolBarButtonClickEventHandler(this.playToolBar_ButtonClick);
             // 
             // newGameToolBarButton
             // 
@@ -457,11 +458,9 @@ namespace Reversi
         private System.Windows.Forms.ToolBarButton newGameToolBarButton;
         private System.Windows.Forms.ToolBarButton resignGameToolBarButton;
         private System.Windows.Forms.ToolBarButton separatorToolBarButton;
-        private System.Windows.Forms.ToolBarButton undoAllMovesToolBarButton;
         private System.Windows.Forms.ToolBarButton undoMoveToolBarButton;
         private System.Windows.Forms.ToolBarButton resumePlayToolBarButton;
         private System.Windows.Forms.ToolBarButton redoMoveToolBarButton;
-        private System.Windows.Forms.ToolBarButton redoAllMovesToolBarButton;
 
         // Board display.
         private System.Windows.Forms.Panel boardPanel;

@@ -19,11 +19,9 @@ namespace Reversi
             NewGame,
             ResignGame,
             Separator,
-            UndoAllMoves,
             UndoMove,
             ResumePlay,
             RedoMove,
-            RedoAllMoves
         }
 
         // Defines the game states.
@@ -956,8 +954,7 @@ namespace Reversi
             // Disable the "Redo Move," "Redo All Moves" and "Resume Play"
             // menu items and tool bar buttons.
             this.redoMoveMenuItem.Enabled =
-                this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoMove].Enabled =
-                this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoAllMoves].Enabled = false;
+                this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoMove].Enabled = false;
             this.resumePlayMenuItem.Enabled =
                 this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResumePlay].Enabled = false;
 
@@ -967,6 +964,39 @@ namespace Reversi
             // Clear the suspend computer play flag and restart the turn.
             this.isComputerPlaySuspended = false;
             this.StartTurn();
+        }
+        #endregion
+
+        #region Event Handlers for Toolbar Buttons
+        //====================================================================
+        // Event handlers for the tool bar.
+        //====================================================================
+
+        //
+        // Handles a button click on the tool bar.
+        //
+        private void playToolBar_ButtonClick(object sender, System.Windows.Forms.ToolBarButtonClickEventArgs e)
+        {
+            // Determine which button was clicked and simulate a click on the
+            // corresponding menu item.
+            switch (this.playToolBar.Buttons.IndexOf(e.Button))
+            {
+                case (int)ReversiForm.ToolBarButton.NewGame:
+                    this.newGameMenuItem.PerformClick();
+                    break;
+                case (int)ReversiForm.ToolBarButton.ResignGame:
+                    this.resignGameMenuItem.PerformClick();
+                    break;
+                case (int)ReversiForm.ToolBarButton.UndoMove:
+                    this.undoMoveMenuItem.PerformClick();
+                    break;
+                case (int)ReversiForm.ToolBarButton.ResumePlay:
+                    this.resumePlayMenuItem.PerformClick();
+                    break;
+                case (int)ReversiForm.ToolBarButton.RedoMove:
+                    this.redoMoveMenuItem.PerformClick();
+                    break;
+            }
         }
         #endregion
 
