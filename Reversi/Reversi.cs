@@ -232,7 +232,7 @@ namespace Reversi
         //
         // Starts a new game or, optionally, restarts an ended game.
         //
-        private void StartGame(bool isRestart = false)
+        private void StartGame()
         {
             // Initialize the move list.
             this.moveNumber = 1;
@@ -250,15 +250,35 @@ namespace Reversi
             // Initialize the move history.
             this.previousGameState = null;
 
-            // Initialize the board.
-            this.board.SetForNewGame();
-            this.UpdateBoardDisplay();
-
             // Clear the suspend computer play flag.
             this.isComputerPlaySuspended = false;
 
+            // Initialize the board.
+            this.board.SetForNewGame();
+            this.UpdateBoardDisplay();
+            this.initializeVisuals();
+
             // Start the first turn.
             this.StartTurn();
+        }
+
+        private void initializeVisuals()
+        {
+            // Enable/disable the menu items and tool bar buttons as
+            // appropriate.
+            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = false;
+            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = true;
+            this.undoMoveMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.UndoMove].Enabled = false;
+            this.redoMoveMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoMove].Enabled = false;
+            this.resumePlayMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResumePlay].Enabled = false;
+
+            // Initialize the information display.
+            this.currentColorTextLabel.Visible = true;
+            this.currentColorPanel.Visible = true;
+
+            // Initialize the status display.
+            this.statusLabel.Text = "";
+            this.statusPanel.Refresh();
         }
 
         //
@@ -345,7 +365,7 @@ namespace Reversi
 
             // If the animate move option is active,
             // set up animation for the affected discs.
-			if (options.AnimateMoves)
+            if (options.AnimateMoves)
                 setSquaresForAnimation(row, col);
 
             // Update the display to reflect the board changes.
@@ -538,6 +558,16 @@ namespace Reversi
         //
         private void CalculateComputerMove()
         {
+            // Load the AI parameters.
+            this.SetAIParameters();
+
+            // Find the best available move.
+            ComputerMove move = this.GetBestMove(this.board);
+
+            // Perform a callback to make the move.
+            Object[] args = { move.row, move.col };
+            MakeComputerMoveDelegate moveDelegate = new MakeComputerMoveDelegate(this.MakeComputerMove);
+            this.BeginInvoke(moveDelegate, args);
         }
 
         // ===================================================================
@@ -551,21 +581,126 @@ namespace Reversi
         //
         private ComputerMove GetBestMove(Board board)
         {
+            // Initialize alpha-beta parameters in case
+            // alpha-beta pruning option is enabled.
+            int alpha = int.MaxValue;
+            int beta = int.MinValue;
+
             // Kick off the look ahead.
-            return this.GetBestMove(board, this.currentColor, 1, 0, 0);
+            return this.minimax(board, currentColor, 1, alpha, beta, false, 1);
         }
 
         //
         // This function uses look ahead to evaluate all valid moves for a
         // given player color and returns the best move it can find.
         //
-        private ComputerMove GetBestMove(Board board, int color, int depth, int alpha, int beta)
+        private ComputerMove minimax(Board board, int color, int heuristicFunction, int alpha, int beta, bool alpha_beta, int depth = 1)
         {
             // Initialize the best move.
             ComputerMove bestMove = new ComputerMove(-1, -1);
 
+            // Check every square on the board and try to perform
+            // each and every move (up to the given depth)
+            // to calculate best move for the current player.
+            // We are certain that there are valid moves at this point
+            // as we wouldn't be here if there weren't any
+            // checks are performed in the StartTurn function.
+            for (int i = 0; i < 10; ++i)
+                for (int j = 0; j < 10; ++j)
+                    if (board.IsValidMove(color, i, j))
+                    {
+                        // We found a valid move now we copy the board
+                        // and try to make that move on the new board
+                        // to evaluate its weight.
+                        Board tempBoard = new Board(board);
+                        tempBoard.MakeMove(color, i, j);
+
+                        // Holds the current move being tested.
+                        ComputerMove moveBeingChecked = new ComputerMove(i, j);
+
+                        // Holds the color ID of a player that has no mobility
+                        // Initialized to 0 in case both are mobile.
+                        int forfeit = 0;
+
+                        // Holds the color ID of the next player.
+                        int nextPlayer = -color;
+
+                        // A flag that indicates whether either of
+                        // the players is mobile or if game is over.
+                        bool gameOver = false;
+
+                        // Just like in StartTurn, after passing a turn
+                        // to the next player due to no mobility for the other
+                        // we need to check if the new player is mobile
+                        // if not then neither can move and game is over.
+                        int opponentMobility = tempBoard.GetValidMoveCount(nextPlayer);
+                        if (opponentMobility == 0)
+                        {
+                            forfeit = nextPlayer;
+                            nextPlayer = color;
+
+                            if (!tempBoard.HasAnyValidMove(color))
+                                gameOver = true;
+                        }
+
+                        if (depth == lookAheadDepth || gameOver)
+                        {
+                            if (heuristicFunction == 1)
+                                moveBeingChecked.rank = heuristicFunction1(tempBoard, gameOver, color, opponentMobility);
+                            else moveBeingChecked.rank = heuristicFunction2(tempBoard, gameOver, color, opponentMobility);
+                        }
+                        else
+                        {
+                            ComputerMove nextMove = minimax(tempBoard, nextPlayer, heuristicFunction, alpha, beta, alpha_beta, ++depth);
+                            moveBeingChecked.rank = nextMove.rank;
+
+                            // TODO: Modifications to moveBeingChecked.rank might be neeeded.
+
+                            // Adjust the alpha and beta values, if necessary.
+                            if (color == Board.White && moveBeingChecked.rank > beta)
+                                beta = moveBeingChecked.rank;
+                            if (color == Board.Black && moveBeingChecked.rank < alpha)
+                                alpha = moveBeingChecked.rank;
+                        }
+
+                        // If the alpha-beta pruning is enabled
+                        // perform a cut off if necessary.
+                        if (alpha_beta)
+                        {
+                            if (color == Board.White && moveBeingChecked.rank > alpha)
+                            {
+                                moveBeingChecked.rank = alpha;
+                                return moveBeingChecked;
+                            }
+                            if (color == Board.Black && moveBeingChecked.rank < beta)
+                            {
+                                moveBeingChecked.rank = beta;
+                                return moveBeingChecked;
+                            }
+                        }
+
+                        // If this is the first move tested, assume it is the
+                        // best for now. otherwise, compare the test move
+                        // to the current best move and take the one that
+                        // is better for this color.
+                        if (bestMove.row < 0)
+                            bestMove = moveBeingChecked;
+                        else if (color * moveBeingChecked.rank > color * bestMove.rank)
+                            bestMove = moveBeingChecked;
+                    }
+
             // Return the best move found.
             return bestMove;
+        }
+
+        int heuristicFunction1(Board newBoard, bool gameOver, int color, int opponentMobility)
+        {
+            return 0;
+        }
+
+        int heuristicFunction2(Board newBoard, bool gameOver, int color, int opponentMobility)
+        {
+            return 0;
         }
 
         //
