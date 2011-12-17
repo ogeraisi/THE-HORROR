@@ -598,6 +598,7 @@ namespace Reversi
         {
             // Initialize the best move.
             ComputerMove bestMove = new ComputerMove(-1, -1);
+            bestMove.rank = -color * int.MaxValue;
 
             // Check every square on the board and try to perform
             // each and every move (up to the given depth)
