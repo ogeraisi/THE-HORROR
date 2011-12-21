@@ -52,11 +52,13 @@ namespace Reversi
         private static readonly int animationTimerInterval = 50;
 
         // AI parameters.
-        private int lookAheadDepth = 6;
-        //private int forfeitWeight = 35;
-        //private int frontierWeight = 10;
-        //private int mobilityWeight = 5;
-        //private int stabilityWeight = 50;
+        private int mobilityWeight;
+        private int lookAheadDepth;
+        private int forfeitWeight;
+        private int frontierWeight;
+        private int stabilityWeight;
+        private int leastStonesWeight;
+        private bool alphaBeta = false;
 
         // Defines a thread for running the computer move look ahead.
         private Thread calculateComputerMoveThread;
@@ -558,9 +560,6 @@ namespace Reversi
         //
         private void CalculateComputerMove()
         {
-            // Load the AI parameters.
-            this.SetAIParameters();
-
             // Find the best available move.
             ComputerMove move = this.GetBestMove(this.board);
 
@@ -587,14 +586,14 @@ namespace Reversi
             int beta = int.MinValue;
 
             // Kick off the look ahead.
-            return this.minimax(board, currentColor, 1, alpha, beta, false, 1);
+            return this.minimax(board, currentColor, 1, alpha, beta, 1);
         }
 
         //
         // This function uses look ahead to evaluate all valid moves for a
         // given player color and returns the best move it can find.
         //
-        private ComputerMove minimax(Board board, int color, int heuristicFunction, int alpha, int beta, bool alpha_beta, int depth = 1)
+        private ComputerMove minimax(Board board, int color, int heuristicFunction, int alpha, int beta, int depth = 1)
         {
             // Initialize the best move.
             ComputerMove bestMove = new ComputerMove(-1, -1);
@@ -647,12 +646,12 @@ namespace Reversi
                         if (depth == lookAheadDepth || gameOver)
                         {
                             if (heuristicFunction == 1)
-                                moveBeingChecked.rank = heuristicFunction1(tempBoard, gameOver, color, opponentMobility);
-                            else moveBeingChecked.rank = heuristicFunction2(tempBoard, gameOver, color, opponentMobility);
+                                moveBeingChecked.rank = heuristicFunction1(tempBoard, forfeit, color, opponentMobility);
+                            else moveBeingChecked.rank = heuristicFunction2(tempBoard, forfeit, color, opponentMobility);
                         }
                         else
                         {
-                            ComputerMove nextMove = minimax(tempBoard, nextPlayer, heuristicFunction, alpha, beta, alpha_beta, ++depth);
+                            ComputerMove nextMove = minimax(tempBoard, nextPlayer, heuristicFunction, alpha, beta, ++depth);
                             moveBeingChecked.rank = nextMove.rank;
 
                             // TODO: Modifications to moveBeingChecked.rank might be neeeded.
@@ -666,7 +665,7 @@ namespace Reversi
 
                         // If the alpha-beta pruning is enabled
                         // perform a cut off if necessary.
-                        if (alpha_beta)
+                        if (alphaBeta)
                         {
                             if (color == Board.White && moveBeingChecked.rank > alpha)
                             {
@@ -694,25 +693,62 @@ namespace Reversi
             return bestMove;
         }
 
-        int heuristicFunction1(Board newBoard, bool gameOver, int color, int opponentMobility)
+        int heuristicFunction1(Board newBoard, int forfeit, int color, int opponentMobility)
         {
-            return 0;
+            // Load the AI parameters.
+            this.SetAIParameters(1);
+
+            return (-forfeitWeight * forfeit
+                                    + frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
+                                    mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
+                                    -stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
+                                    leastStonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount) +
+                                                           newBoard.WhiteCount - newBoard.BlackCount);
         }
 
-        int heuristicFunction2(Board newBoard, bool gameOver, int color, int opponentMobility)
+        int heuristicFunction2(Board newBoard, int forfeit, int color, int opponentMobility)
         {
-            return 0;
+            // Load the AI parameters.
+            this.SetAIParameters(2);
+
+            return (-forfeitWeight * forfeit -
+                                    frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) -
+                                    mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) -
+                                    stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
+                                                           newBoard.WhiteCount - newBoard.BlackCount);
         }
 
         //
         // Sets the AI parameters based on the current difficulty setting.
         //
-        private void SetAIParameters()
+        private void SetAIParameters(int heuristicFunction)
         {
             // Near the end of the game, when there are relatively few moves
             // left, set the look-ahead depth to do an exhaustive search.
-            if (this.board.EmptyCount < this.lookAheadDepth)
+            if (this.board.EmptyCount <= this.lookAheadDepth)
+            {
                 this.lookAheadDepth = this.board.EmptyCount;
+                this.forfeitWeight = this.frontierWeight = this.stabilityWeight = 0;
+                this.leastStonesWeight = 1;
+            }
+            else
+            {
+                //this.lookAheadDepth = ;
+                this.forfeitWeight = 35;
+                this.frontierWeight = 10;
+                this.stabilityWeight = 50;
+                this.leastStonesWeight = 15;
+            }
+
+            switch (heuristicFunction)
+            {
+                case 1:
+                    mobilityWeight = 5;
+                    break;
+                case 2:
+                    mobilityWeight = 8;
+                    break;
+            }
         }
 
         #region Board Display Handlers
