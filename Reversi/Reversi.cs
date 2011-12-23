@@ -58,7 +58,7 @@ namespace Reversi
         private int frontierWeight;
         private int stabilityWeight;
         private int leastStonesWeight;
-        private bool alphaBeta = false;
+        private bool alphaBeta = true;
 
         // Defines a thread for running the computer move look ahead.
         private Thread calculateComputerMoveThread;
@@ -560,6 +560,9 @@ namespace Reversi
         //
         private void CalculateComputerMove()
         {
+            //Initialize lookupAhead value.
+            lookAheadDepth = 10;
+            
             // Find the best available move.
             ComputerMove move = this.GetBestMove(this.board);
 
@@ -586,18 +589,24 @@ namespace Reversi
             int beta = int.MinValue;
 
             // Kick off the look ahead.
-            return this.minimax(board, currentColor, 1, alpha, beta, 1);
+            return this.minimax(board, currentColor, alpha, beta);
         }
 
         //
         // This function uses look ahead to evaluate all valid moves for a
         // given player color and returns the best move it can find.
         //
-        private ComputerMove minimax(Board board, int color, int heuristicFunction, int alpha, int beta, int depth = 1)
+        private ComputerMove minimax(Board board, int color, int alpha, int beta, int depth = 1)
         {
             // Initialize the best move.
             ComputerMove bestMove = new ComputerMove(-1, -1);
             bestMove.rank = -color * int.MaxValue;
+
+            // Start at a random position on the board. This way, if two or
+            // more moves are equally good, we'll take one of them at random.
+            Random random = new Random();
+            int rowStart = random.Next(10);
+            int colStart = random.Next(10);
 
             // Check every square on the board and try to perform
             // each and every move (up to the given depth)
@@ -607,16 +616,21 @@ namespace Reversi
             // checks are performed in the StartTurn function.
             for (int i = 0; i < 10; ++i)
                 for (int j = 0; j < 10; ++j)
-                    if (board.IsValidMove(color, i, j))
+                {
+                    // Get the row and column.
+                    int row = (rowStart + i) % 10;
+                    int col = (colStart + j) % 10;
+
+                    if (board.IsValidMove(color, row, col))
                     {
                         // We found a valid move now we copy the board
                         // and try to make that move on the new board
                         // to evaluate its weight.
                         Board tempBoard = new Board(board);
-                        tempBoard.MakeMove(color, i, j);
+                        tempBoard.MakeMove(color, row, col);
 
                         // Holds the current move being tested.
-                        ComputerMove moveBeingChecked = new ComputerMove(i, j);
+                        ComputerMove moveBeingChecked = new ComputerMove(row, col);
 
                         // Holds the color ID of a player that has no mobility
                         // Initialized to 0 in case both are mobile.
@@ -645,16 +659,17 @@ namespace Reversi
 
                         if (depth == lookAheadDepth || gameOver)
                         {
-                            if (heuristicFunction == 1)
-                                moveBeingChecked.rank = heuristicFunction1(tempBoard, forfeit, color, opponentMobility);
-                            else moveBeingChecked.rank = heuristicFunction2(tempBoard, forfeit, color, opponentMobility);
+                            // Initialize AI Parameters.
+                            if (this.currentColor == Board.White)
+                                SetAIParameters(1);
+                            else SetAIParameters(2);
+
+                            moveBeingChecked.rank = heuristicFunction(tempBoard, forfeit, color, opponentMobility);
                         }
                         else
                         {
-                            ComputerMove nextMove = minimax(tempBoard, nextPlayer, heuristicFunction, alpha, beta, ++depth);
+                            ComputerMove nextMove = minimax(tempBoard, nextPlayer, alpha, beta, ++depth);
                             moveBeingChecked.rank = nextMove.rank;
-
-                            // TODO: Modifications to moveBeingChecked.rank might be neeeded.
 
                             // Adjust the alpha and beta values, if necessary.
                             if (color == Board.White && moveBeingChecked.rank > beta)
@@ -685,37 +700,23 @@ namespace Reversi
                         // is better for this color.
                         if (bestMove.row < 0)
                             bestMove = moveBeingChecked;
-                        else if (color * moveBeingChecked.rank > color * bestMove.rank)
+                        else if (color * moveBeingChecked.rank < color * bestMove.rank)
                             bestMove = moveBeingChecked;
                     }
+                }
 
             // Return the best move found.
             return bestMove;
         }
 
-        int heuristicFunction1(Board newBoard, int forfeit, int color, int opponentMobility)
+        int heuristicFunction(Board newBoard, int forfeit, int color, int opponentMobility)
         {
-            // Load the AI parameters.
-            this.SetAIParameters(1);
-
-            return (-forfeitWeight * forfeit
-                                    + frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
+            return
+                forfeitWeight * forfeit +
+                                    frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
                                     mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
-                                    -stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
-                                    leastStonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount) +
-                                                           newBoard.WhiteCount - newBoard.BlackCount);
-        }
-
-        int heuristicFunction2(Board newBoard, int forfeit, int color, int opponentMobility)
-        {
-            // Load the AI parameters.
-            this.SetAIParameters(2);
-
-            return (-forfeitWeight * forfeit -
-                                    frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) -
-                                    mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) -
                                     stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
-                                                           newBoard.WhiteCount - newBoard.BlackCount);
+                                    leastStonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount);
         }
 
         //
@@ -725,29 +726,32 @@ namespace Reversi
         {
             // Near the end of the game, when there are relatively few moves
             // left, set the look-ahead depth to do an exhaustive search.
+
+            switch (heuristicFunction)
+            {
+                case 1:
+                    this.lookAheadDepth = 15;
+                    this.forfeitWeight = -30;
+                    this.frontierWeight = -10;
+                    this.stabilityWeight = -50;
+                    this.leastStonesWeight = 15;
+                    this.mobilityWeight = -10;
+                    break;
+                case 2:
+                    this.lookAheadDepth = 15;
+                    this.forfeitWeight = -30;
+                    this.frontierWeight = -14;
+                    this.stabilityWeight = -40;
+                    this.leastStonesWeight = 15;
+                    this.mobilityWeight = -12;
+                    break;
+            }
+
             if (this.board.EmptyCount <= this.lookAheadDepth)
             {
                 this.lookAheadDepth = this.board.EmptyCount;
                 this.forfeitWeight = this.frontierWeight = this.stabilityWeight = 0;
                 this.leastStonesWeight = 1;
-            }
-            else
-            {
-                //this.lookAheadDepth = ;
-                this.forfeitWeight = 35;
-                this.frontierWeight = 10;
-                this.stabilityWeight = 50;
-                this.leastStonesWeight = 15;
-            }
-
-            switch (heuristicFunction)
-            {
-                case 1:
-                    mobilityWeight = 5;
-                    break;
-                case 2:
-                    mobilityWeight = 8;
-                    break;
             }
         }
 
