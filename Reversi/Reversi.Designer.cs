@@ -51,11 +51,6 @@ namespace Reversi
             this.optionsMenuItem = new System.Windows.Forms.MenuItem();
             this.gameSeparator2MenuItem = new System.Windows.Forms.MenuItem();
             this.exitMenuItem = new System.Windows.Forms.MenuItem();
-            this.moveMenuItem = new System.Windows.Forms.MenuItem();
-            this.undoMoveMenuItem = new System.Windows.Forms.MenuItem();
-            this.redoMoveMenuItem = new System.Windows.Forms.MenuItem();
-            this.moveSeparatorMenuItem = new System.Windows.Forms.MenuItem();
-            this.resumePlayMenuItem = new System.Windows.Forms.MenuItem();
             this.boardPanel = new System.Windows.Forms.Panel();
             this.cornerLabel = new System.Windows.Forms.Label();
             this.statusLabel = new System.Windows.Forms.Label();
@@ -63,10 +58,6 @@ namespace Reversi
             this.playToolBar = new System.Windows.Forms.ToolBar();
             this.newGameToolBarButton = new System.Windows.Forms.ToolBarButton();
             this.resignGameToolBarButton = new System.Windows.Forms.ToolBarButton();
-            this.separatorToolBarButton = new System.Windows.Forms.ToolBarButton();
-            this.undoMoveToolBarButton = new System.Windows.Forms.ToolBarButton();
-            this.resumePlayToolBarButton = new System.Windows.Forms.ToolBarButton();
-            this.redoMoveToolBarButton = new System.Windows.Forms.ToolBarButton();
             this.playImageList = new System.Windows.Forms.ImageList(this.components);
             this.infoPanel.SuspendLayout();
             this.boardPanel.SuspendLayout();
@@ -75,8 +66,8 @@ namespace Reversi
             // 
             // infoPanel
             // 
-            this.infoPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.infoPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.infoPanel.Controls.Add(this.currentColorPanel);
             this.infoPanel.Controls.Add(this.whiteCountLabel);
             this.infoPanel.Controls.Add(this.whiteTextLabel);
@@ -148,9 +139,9 @@ namespace Reversi
             // 
             // moveListView
             // 
-            this.moveListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.moveListView.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.moveListView.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.moveListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.moveNullColumn,
@@ -193,9 +184,9 @@ namespace Reversi
             // 
             // squaresPanel
             // 
-            this.squaresPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.squaresPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.squaresPanel.Location = new System.Drawing.Point(19, 18);
             this.squaresPanel.Name = "squaresPanel";
             this.squaresPanel.Size = new System.Drawing.Size(213, 243);
@@ -204,8 +195,7 @@ namespace Reversi
             // mainMenu
             // 
             this.mainMenu.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.gameMenuItem,
-            this.moveMenuItem});
+            this.gameMenuItem});
             // 
             // gameMenuItem
             // 
@@ -259,49 +249,11 @@ namespace Reversi
             this.exitMenuItem.Text = "E&xit";
             this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
             // 
-            // moveMenuItem
-            // 
-            this.moveMenuItem.Index = 1;
-            this.moveMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.undoMoveMenuItem,
-            this.redoMoveMenuItem,
-            this.moveSeparatorMenuItem,
-            this.resumePlayMenuItem});
-            this.moveMenuItem.ShowShortcut = false;
-            this.moveMenuItem.Text = "&Move";
-            // 
-            // undoMoveMenuItem
-            // 
-            this.undoMoveMenuItem.Enabled = false;
-            this.undoMoveMenuItem.Index = 0;
-            this.undoMoveMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlZ;
-            this.undoMoveMenuItem.Text = "&Undo Move";
-            // 
-            // redoMoveMenuItem
-            // 
-            this.redoMoveMenuItem.Enabled = false;
-            this.redoMoveMenuItem.Index = 1;
-            this.redoMoveMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlY;
-            this.redoMoveMenuItem.Text = "&Redo Move";
-            // 
-            // moveSeparatorMenuItem
-            // 
-            this.moveSeparatorMenuItem.Index = 2;
-            this.moveSeparatorMenuItem.Text = "-";
-            // 
-            // resumePlayMenuItem
-            // 
-            this.resumePlayMenuItem.Enabled = false;
-            this.resumePlayMenuItem.Index = 3;
-            this.resumePlayMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlP;
-            this.resumePlayMenuItem.Text = "Resume &Play";
-            this.resumePlayMenuItem.Click += new System.EventHandler(this.resumePlayMenuItem_Click);
-            // 
             // boardPanel
             // 
-            this.boardPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.boardPanel.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.boardPanel.BackColor = System.Drawing.SystemColors.Control;
             this.boardPanel.Controls.Add(this.cornerLabel);
             this.boardPanel.Controls.Add(this.squaresPanel);
@@ -330,8 +282,8 @@ namespace Reversi
             // 
             // statusPanel
             // 
-            this.statusPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.statusPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.statusPanel.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
             this.statusPanel.Controls.Add(this.statusLabel);
             this.statusPanel.Location = new System.Drawing.Point(10, 307);
@@ -343,11 +295,7 @@ namespace Reversi
             // 
             this.playToolBar.Buttons.AddRange(new System.Windows.Forms.ToolBarButton[] {
             this.newGameToolBarButton,
-            this.resignGameToolBarButton,
-            this.separatorToolBarButton,
-            this.undoMoveToolBarButton,
-            this.resumePlayToolBarButton,
-            this.redoMoveToolBarButton});
+            this.resignGameToolBarButton});
             this.playToolBar.Divider = false;
             this.playToolBar.DropDownArrows = true;
             this.playToolBar.ImageList = this.playImageList;
@@ -370,32 +318,6 @@ namespace Reversi
             this.resignGameToolBarButton.ImageIndex = 1;
             this.resignGameToolBarButton.Name = "resignGameToolBarButton";
             this.resignGameToolBarButton.ToolTipText = "Resign Game";
-            // 
-            // separatorToolBarButton
-            // 
-            this.separatorToolBarButton.Name = "separatorToolBarButton";
-            this.separatorToolBarButton.Style = System.Windows.Forms.ToolBarButtonStyle.Separator;
-            // 
-            // undoMoveToolBarButton
-            // 
-            this.undoMoveToolBarButton.Enabled = false;
-            this.undoMoveToolBarButton.ImageIndex = 3;
-            this.undoMoveToolBarButton.Name = "undoMoveToolBarButton";
-            this.undoMoveToolBarButton.ToolTipText = "Undo Move";
-            // 
-            // resumePlayToolBarButton
-            // 
-            this.resumePlayToolBarButton.Enabled = false;
-            this.resumePlayToolBarButton.ImageIndex = 4;
-            this.resumePlayToolBarButton.Name = "resumePlayToolBarButton";
-            this.resumePlayToolBarButton.ToolTipText = "Resume Play";
-            // 
-            // redoMoveToolBarButton
-            // 
-            this.redoMoveToolBarButton.Enabled = false;
-            this.redoMoveToolBarButton.ImageIndex = 5;
-            this.redoMoveToolBarButton.Name = "redoMoveToolBarButton";
-            this.redoMoveToolBarButton.ToolTipText = "Redo Move";
             // 
             // playImageList
             // 
@@ -446,21 +368,12 @@ namespace Reversi
         private System.Windows.Forms.MenuItem optionsMenuItem;
         private System.Windows.Forms.MenuItem gameSeparator2MenuItem;
         private System.Windows.Forms.MenuItem exitMenuItem;
-        private System.Windows.Forms.MenuItem moveMenuItem;
-        private System.Windows.Forms.MenuItem undoMoveMenuItem;
-        private System.Windows.Forms.MenuItem redoMoveMenuItem;
-        private System.Windows.Forms.MenuItem moveSeparatorMenuItem;
-        private System.Windows.Forms.MenuItem resumePlayMenuItem;
 
         // Tool bar.
         private System.Windows.Forms.ToolBar playToolBar;
         private System.Windows.Forms.ImageList playImageList;
         private System.Windows.Forms.ToolBarButton newGameToolBarButton;
         private System.Windows.Forms.ToolBarButton resignGameToolBarButton;
-        private System.Windows.Forms.ToolBarButton separatorToolBarButton;
-        private System.Windows.Forms.ToolBarButton undoMoveToolBarButton;
-        private System.Windows.Forms.ToolBarButton resumePlayToolBarButton;
-        private System.Windows.Forms.ToolBarButton redoMoveToolBarButton;
 
         // Board display.
         private System.Windows.Forms.Panel boardPanel;

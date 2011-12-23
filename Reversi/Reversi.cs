@@ -18,10 +18,6 @@ namespace Reversi
         {
             NewGame,
             ResignGame,
-            Separator,
-            UndoMove,
-            ResumePlay,
-            RedoMove,
         }
 
         // Defines the game states.
@@ -101,9 +97,6 @@ namespace Reversi
 
         // Used to track which player made the last move.
         private int lastMoveColor;
-
-        // Used to suspend computer play while moves are undone/redone.
-        private bool isComputerPlaySuspended;
 
         // For tracking the window location and size.
         private Rectangle windowSettings;
@@ -252,9 +245,6 @@ namespace Reversi
             // Initialize the move history.
             this.previousGameState = null;
 
-            // Clear the suspend computer play flag.
-            this.isComputerPlaySuspended = false;
-
             // Initialize the board.
             this.board.SetForNewGame();
             this.UpdateBoardDisplay();
@@ -270,9 +260,6 @@ namespace Reversi
             // appropriate.
             this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = false;
             this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = true;
-            this.undoMoveMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.UndoMove].Enabled = false;
-            this.redoMoveMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoMove].Enabled = false;
-            this.resumePlayMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResumePlay].Enabled = false;
 
             // Initialize the information display.
             this.currentColorTextLabel.Visible = true;
@@ -500,11 +487,6 @@ namespace Reversi
         //
         private void MakePlayerMove(int row, int col)
         {
-            // Allow the computer to resume play.
-            // This might happen in case of an undo/redo turn.
-            if (this.isComputerPlaySuspended)
-                this.isComputerPlaySuspended = false;
-
             // Clear any board square highlighting and make the move.
             this.UnHighlightSquares();
             this.MakeMove(row, col);
@@ -1121,26 +1103,6 @@ namespace Reversi
             // Close the form.
             this.Close();
         }
-
-        //
-        // Handles a "Resume Play" click.
-        //
-        private void resumePlayMenuItem_Click(object sender, System.EventArgs e)
-        {
-            // Disable the "Redo Move," "Redo All Moves" and "Resume Play"
-            // menu items and tool bar buttons.
-            this.redoMoveMenuItem.Enabled =
-                this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.RedoMove].Enabled = false;
-            this.resumePlayMenuItem.Enabled =
-                this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResumePlay].Enabled = false;
-
-            // Set the game state.
-            this.gameState = ReversiForm.GameState.MoveCompleted;
-
-            // Clear the suspend computer play flag and restart the turn.
-            this.isComputerPlaySuspended = false;
-            this.StartTurn();
-        }
         #endregion
 
         #region Event Handlers for Toolbar Buttons
@@ -1162,15 +1124,6 @@ namespace Reversi
                     break;
                 case (int)ReversiForm.ToolBarButton.ResignGame:
                     this.resignGameMenuItem.PerformClick();
-                    break;
-                case (int)ReversiForm.ToolBarButton.UndoMove:
-                    this.undoMoveMenuItem.PerformClick();
-                    break;
-                case (int)ReversiForm.ToolBarButton.ResumePlay:
-                    this.resumePlayMenuItem.PerformClick();
-                    break;
-                case (int)ReversiForm.ToolBarButton.RedoMove:
-                    this.redoMoveMenuItem.PerformClick();
                     break;
             }
         }
