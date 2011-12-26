@@ -143,6 +143,29 @@ namespace Reversi
         //
         public void MakeMove(int color, int row, int col)
         {
+            // Set the disc on the square.
+            this.squares[row, col] = color;
+
+            // Flip any flanked opponents.
+            int r, c;
+            for (int dr = -1; dr <= 1; ++dr)
+                for (int dc = -1; dc <= 1; ++dc)
+                    // Are there any outflanked opponents?
+                    if ((dr != 0 || dc != 0) && IsOutflanking(color, row, col, dr, dc))
+                    {
+                        r = row + dr;
+                        c = col + dc;
+                        // Flip 'em.
+                        while (this.squares[r, c] == -color)
+                        {
+                            this.squares[r, c] = color;
+                            r += dr;
+                            c += dc;
+                        }
+                    }
+
+            // Update the counts.
+            this.UpdateCounts();
         }
 
         //
@@ -204,6 +227,22 @@ namespace Reversi
         //
         private bool IsOutflanking(int color, int row, int col, int dr, int dc)
         {
+            // Move in the given direction as long as we stay on the board and
+            // land on a disc of the opposite color.
+            int r = row + dr;
+            int c = col + dc;
+            while (r >= 0 && r < 10 && c >= 0 && c < 10 && this.squares[r, c] == -color)
+            {
+                r += dr;
+                c += dc;
+            }
+
+            // If we ran off the board, only moved one space or didn't land on
+            // a disc of the same color, return false.
+            if (r < 0 || r > 9 || c < 0 || c > 9 || (r - dr == row && c - dc == col) || this.squares[r, c] != color)
+                return false;
+
+            // Otherwise, return true;
             return true;
         }
 
@@ -287,7 +326,132 @@ namespace Reversi
         //
         private bool IsOutflankable(int row, int col)
         {
-            return true;
+            // Get the disc color.
+            int color = this.squares[row, col];
+
+            // Check each line through the disc.
+            // NOTE: A disc is outflankable if there is an empty square on
+            // both sides OR if there is an empty square on one side and an
+            // opponent or unsafe (outflankable) disc of the same color on the
+            // other side.
+            int i, j;
+            bool hasSpaceSide1, hasSpaceSide2;
+            bool hasUnsafeSide1, hasUnsafeSide2;
+
+            // Check the horizontal line through the disc.
+            hasSpaceSide1 = false;
+            hasUnsafeSide1 = false;
+            hasSpaceSide2 = false;
+            hasUnsafeSide2 = false;
+            // West side.
+            for (j = 0; j < col && !hasSpaceSide1; j++)
+                if (this.squares[row, j] == Board.Empty)
+                    hasSpaceSide1 = true;
+                else if (this.squares[row, j] != color || !this.safeDiscs[row, j])
+                    hasUnsafeSide1 = true;
+            // East side.
+            for (j = col + 1; j < 10 && !hasSpaceSide2; j++)
+                if (this.squares[row, j] == Board.Empty)
+                    hasSpaceSide2 = true;
+                else if (this.squares[row, j] != color || !this.safeDiscs[row, j])
+                    hasUnsafeSide2 = true;
+            if ((hasSpaceSide1 && hasSpaceSide2) ||
+                (hasSpaceSide1 && hasUnsafeSide2) ||
+                (hasUnsafeSide1 && hasSpaceSide2))
+                return true;
+
+            // Check the vertical line through the disc.
+            hasSpaceSide1 = false;
+            hasSpaceSide2 = false;
+            hasUnsafeSide1 = false;
+            hasUnsafeSide2 = false;
+            // North side.
+            for (i = 0; i < row && !hasSpaceSide1; i++)
+                if (this.squares[i, col] == Board.Empty)
+                    hasSpaceSide1 = true;
+                else if (this.squares[i, col] != color || !this.safeDiscs[i, col])
+                    hasUnsafeSide1 = true;
+            // South side.
+            for (i = row + 1; i < 10 && !hasSpaceSide2; i++)
+                if (this.squares[i, col] == Board.Empty)
+                    hasSpaceSide2 = true;
+                else if (this.squares[i, col] != color || !this.safeDiscs[i, col])
+                    hasUnsafeSide2 = true;
+            if ((hasSpaceSide1 && hasSpaceSide2) ||
+                (hasSpaceSide1 && hasUnsafeSide2) ||
+                (hasUnsafeSide1 && hasSpaceSide2))
+                return true;
+
+            // Check the Northwest-Southeast diagonal line through the disc.
+            hasSpaceSide1 = false;
+            hasSpaceSide2 = false;
+            hasUnsafeSide1 = false;
+            hasUnsafeSide2 = false;
+            // Northwest side.
+            i = row - 1;
+            j = col - 1;
+            while (i >= 0 && j >= 0 && !hasSpaceSide1)
+            {
+                if (this.squares[i, j] == Board.Empty)
+                    hasSpaceSide1 = true;
+                else if (this.squares[i, j] != color || !this.safeDiscs[i, j])
+                    hasUnsafeSide1 = true;
+                i--;
+                j--;
+            }
+            // Southeast side.
+            i = row + 1;
+            j = col + 1;
+            while (i < 10 && j < 10 && !hasSpaceSide2)
+            {
+                if (this.squares[i, j] == Board.Empty)
+                    hasSpaceSide2 = true;
+                else if (this.squares[i, j] != color || !this.safeDiscs[i, j])
+                    hasUnsafeSide2 = true;
+                i++;
+                j++;
+            }
+            if ((hasSpaceSide1 && hasSpaceSide2) ||
+                (hasSpaceSide1 && hasUnsafeSide2) ||
+                (hasUnsafeSide1 && hasSpaceSide2))
+                return true;
+
+            // Check the Northeast-Southwest diagonal line through the disc.
+            hasSpaceSide1 = false;
+            hasSpaceSide2 = false;
+            hasUnsafeSide1 = false;
+            hasUnsafeSide2 = false;
+            // Northeast side.
+            i = row - 1;
+            j = col + 1;
+            while (i >= 0 && j < 10 && !hasSpaceSide1)
+            {
+                if (this.squares[i, j] == Board.Empty)
+                    hasSpaceSide1 = true;
+                else if (this.squares[i, j] != color || !this.safeDiscs[i, j])
+                    hasUnsafeSide1 = true;
+                i--;
+                j++;
+            }
+            // Southwest side.
+            i = row + 1;
+            j = col - 1;
+            while (i < 10 && j >= 0 && !hasSpaceSide2)
+            {
+                if (this.squares[i, j] == Board.Empty)
+                    hasSpaceSide2 = true;
+                else if (this.squares[i, j] != color || !this.safeDiscs[i, j])
+                    hasUnsafeSide2 = true;
+                i++;
+                j--;
+            }
+            if ((hasSpaceSide1 && hasSpaceSide2) ||
+                (hasSpaceSide1 && hasUnsafeSide2) ||
+                (hasUnsafeSide1 && hasSpaceSide2))
+                return true;
+
+            // All lines are safe so the disc cannot be outflanked.
+            return false;
         }
     }
 }
