@@ -233,13 +233,13 @@ namespace Reversi
             // Initialize the board.
             this.board.SetForNewGame();
             this.UpdateBoardDisplay();
-            this.initializeVisuals();
+            this.setNewGameVisuals();
 
             // Start the first turn.
             this.StartTurn();
         }
 
-        private void initializeVisuals()
+        private void setNewGameVisuals()
         {
             // Enable/disable the menu items and tool bar buttons as
             // appropriate.
@@ -258,13 +258,80 @@ namespace Reversi
         //
         // Ends the current game, optionally by player resignation.
         //
-        private void EndGame(/*bool isResignation = false*/)
+        private void EndGame(bool isResignation = false)
         {
+            // Set the game state.
+            this.gameState = ReversiForm.GameState.GameOver;
+
             // Stop the game timer.
             this.animationTimer.Stop();
 
-            // Set the game state.
-            this.gameState = ReversiForm.GameState.GameOver;
+            // Update visuals as needed.
+            setEndGameVisuals(isResignation);
+        }
+
+        private void setEndGameVisuals(bool isResignation)
+        {
+            // Enable/disable the menu items and tool bar buttons as
+            // appropriate.
+            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = true;
+            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = false;
+
+            // Clear the current player indicator display.
+            this.currentColorPanel.BackColor = Color.Empty;
+            this.currentColorPanel.Visible = false;
+            this.currentColorTextLabel.Visible = false;
+
+            // For a computer vs. user game, determine who played what color.
+            int computerColor = Board.Empty;
+            int userColor = Board.Empty;
+            if (this.IsComputerPlayer(Board.Black) && !this.IsComputerPlayer(Board.White))
+            {
+                computerColor = Board.Black;
+                userColor = Board.White;
+            }
+            if (this.IsComputerPlayer(Board.White) && !this.IsComputerPlayer(Board.Black))
+            {
+                computerColor = Board.White;
+                userColor = Board.Black;
+            }
+
+            // Handle a resignation.
+            if (isResignation)
+            {
+                // For computer vs. computer game,
+                // just update the status message.
+                if (this.IsComputerPlayer(Board.Black) && this.IsComputerPlayer(Board.White))
+                    this.statusLabel.Text = "Game aborted.";
+                else
+                {
+                    // Determine which player is resigning. In a computer vs.
+                    // user game, the computer will never resign so it must be
+                    // the user. In a user vs. user game we'll assume it is
+                    // the current player.
+                    int resigningColor = this.currentColor;
+                    if (computerColor != Board.Empty)
+                        resigningColor = userColor;
+
+                    // Update the status message
+                    if (resigningColor == Board.Black)
+                        this.statusLabel.Text = "Black resigns.";
+                    else
+                        this.statusLabel.Text = "White resigns.";
+                }
+            }
+
+            // Handle an end game.
+            else
+            {
+                // Update the status message.
+                if (this.board.BlackCount > this.board.WhiteCount)
+                    this.statusLabel.Text = "Black wins.";
+                else if (this.board.WhiteCount > this.board.BlackCount)
+                    this.statusLabel.Text = "White wins.";
+                else
+                    this.statusLabel.Text = "Draw.";
+            }
         }
 
         //
