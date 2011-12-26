@@ -77,23 +77,8 @@ namespace Reversi
         // For converting column numbers to letters and vice versa.
         private static String alpha = "ABCDEFGHIJ";
 
-        // Defines a structure for holding move history data.
-        private class MoveRecord
-        {
-            public Board board;
-            public int currentColor;
-            public int lastMoveColor;
-
-            public MoveRecord(Board board, int currentColor, int lastMoveColor)
-            {
-                this.board = new Board(board);
-                this.currentColor = currentColor;
-                this.lastMoveColor = lastMoveColor;
-            }
-        }
-
         // Defines an array for storing the move history.
-        private MoveRecord previousGameState;
+        private Board previousGameState;
 
         // Used to track which player made the last move.
         private int lastMoveColor;
@@ -344,7 +329,7 @@ namespace Reversi
         private void MakeMove(int row, int col)
         {
             // Save the current game state.
-            previousGameState = new MoveRecord(board, currentColor, lastMoveColor);
+            previousGameState = new Board(board);
 
             // Log the move.
             logMove(row, col);
@@ -406,7 +391,7 @@ namespace Reversi
                     {
                         // Initialize animation for the discs that were
                         // flipped.
-                        if (this.board.GetSquareContents(i, j) != this.previousGameState.board.GetSquareContents(i, j))
+                        if (this.board.GetSquareContents(i, j) != this.previousGameState.GetSquareContents(i, j))
                             this.squareControls[i, j].AnimationCounter = SquareControl.AnimationStart;
                     }
                 }
@@ -543,7 +528,7 @@ namespace Reversi
         private void CalculateComputerMove()
         {
             //Initialize lookupAhead value.
-            lookAheadDepth = 10;
+            lookAheadDepth = 9;
             
             // Find the best available move.
             ComputerMove move = this.GetBestMove(this.board);
@@ -712,7 +697,7 @@ namespace Reversi
             switch (heuristicFunction)
             {
                 case 1:
-                    this.lookAheadDepth = 15;
+                    this.lookAheadDepth = 9;
                     this.forfeitWeight = -30;
                     this.frontierWeight = -10;
                     this.stabilityWeight = -50;
@@ -720,7 +705,7 @@ namespace Reversi
                     this.mobilityWeight = -10;
                     break;
                 case 2:
-                    this.lookAheadDepth = 15;
+                    this.lookAheadDepth = 9;
                     this.forfeitWeight = -30;
                     this.frontierWeight = -14;
                     this.stabilityWeight = -40;
