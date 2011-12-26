@@ -282,42 +282,39 @@ namespace Reversi
             this.currentColorPanel.Visible = false;
             this.currentColorTextLabel.Visible = false;
 
-            // For a computer vs. user game, determine who played what color.
-            int computerColor = Board.Empty;
-            int userColor = Board.Empty;
-            if (this.IsComputerPlayer(Board.Black) && !this.IsComputerPlayer(Board.White))
-            {
-                computerColor = Board.Black;
-                userColor = Board.White;
-            }
-            if (this.IsComputerPlayer(Board.White) && !this.IsComputerPlayer(Board.Black))
-            {
-                computerColor = Board.White;
-                userColor = Board.Black;
-            }
-
             // Handle a resignation.
             if (isResignation)
             {
+                // For a computer vs. user game, determine who played what color.
+                int computerColor = Board.Empty;
+                int userColor = Board.Empty;
+                if (this.IsComputerPlayer(Board.Black) && !this.IsComputerPlayer(Board.White))
+                {
+                    computerColor = Board.Black;
+                    userColor = Board.White;
+                }
+                else if (this.IsComputerPlayer(Board.White) && !this.IsComputerPlayer(Board.Black))
+                {
+                    computerColor = Board.White;
+                    userColor = Board.Black;
+                }
+
                 // For computer vs. computer game,
                 // just update the status message.
+                // In a computer vs. user game,
+                // the computer will never resign so it must be
+                // the user. In a user vs. user game we'll assume it is
+                // the current player.
                 if (this.IsComputerPlayer(Board.Black) && this.IsComputerPlayer(Board.White))
                     this.statusLabel.Text = "Game aborted.";
                 else
                 {
-                    // Determine which player is resigning. In a computer vs.
-                    // user game, the computer will never resign so it must be
-                    // the user. In a user vs. user game we'll assume it is
-                    // the current player.
-                    int resigningColor = this.currentColor;
-                    if (computerColor != Board.Empty)
-                        resigningColor = userColor;
+                    int resigningColor = (computerColor != Board.Empty) ? this.currentColor : userColor;
 
                     // Update the status message
                     if (resigningColor == Board.Black)
                         this.statusLabel.Text = "Black resigns.";
-                    else
-                        this.statusLabel.Text = "White resigns.";
+                    else this.statusLabel.Text = "White resigns.";
                 }
             }
 
@@ -325,12 +322,11 @@ namespace Reversi
             else
             {
                 // Update the status message.
-                if (this.board.BlackCount > this.board.WhiteCount)
+                if (this.board.BlackCount < this.board.WhiteCount)
                     this.statusLabel.Text = "Black wins.";
-                else if (this.board.WhiteCount > this.board.BlackCount)
+                else if (this.board.WhiteCount < this.board.BlackCount)
                     this.statusLabel.Text = "White wins.";
-                else
-                    this.statusLabel.Text = "Draw.";
+                else this.statusLabel.Text = "Draw.";
             }
         }
 
@@ -1037,7 +1033,7 @@ namespace Reversi
             this.UpdateBoardDisplay();
 
             // End the game with the resignation flag set.
-            this.EndGame(/*true*/);
+            this.EndGame(true);
         }
 
         //
