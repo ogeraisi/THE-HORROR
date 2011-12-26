@@ -362,7 +362,7 @@ namespace Reversi
             this.textBox_lookupAheadDepth.Name = "textBox_lookupAheadDepth";
             this.textBox_lookupAheadDepth.Size = new System.Drawing.Size(77, 22);
             this.textBox_lookupAheadDepth.TabIndex = 7;
-            this.textBox_lookupAheadDepth.Text = "6";
+            this.textBox_lookupAheadDepth.Text = "8";
             this.textBox_lookupAheadDepth.TextChanged += new System.EventHandler(this.textBox_lookupAheadDepth_TextChanged);
             this.textBox_lookupAheadDepth.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_lookupAheadDepth_KeyPress);
             // 

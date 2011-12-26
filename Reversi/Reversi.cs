@@ -763,7 +763,7 @@ namespace Reversi
             {
                 case 1:
                     this.forfeitWeight = 30;
-                    this.frontierWeight = 3;
+                    this.frontierWeight = -10;
                     this.stabilityWeight = 50;
                     this.stonesWeight = -15;
                     this.mobilityWeight = -8;
@@ -796,7 +796,7 @@ namespace Reversi
             {
                 if (textBox_lookupAheadDepth.Text == String.Empty)
                     this.lookAheadDepth = 8;
-                else int.Parse(textBox_lookupAheadDepth.Text.ToString());
+                else this.lookAheadDepth = int.Parse(textBox_lookupAheadDepth.Text.ToString());
             }
             catch // safety check, this should never happen!
             {
