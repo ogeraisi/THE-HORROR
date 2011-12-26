@@ -59,6 +59,9 @@ namespace Reversi
             this.newGameToolBarButton = new System.Windows.Forms.ToolBarButton();
             this.resignGameToolBarButton = new System.Windows.Forms.ToolBarButton();
             this.playImageList = new System.Windows.Forms.ImageList(this.components);
+            this.checkBox_alphaBeta = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.textBox_lookupAheadDepth = new System.Windows.Forms.TextBox();
             this.infoPanel.SuspendLayout();
             this.boardPanel.SuspendLayout();
             this.statusPanel.SuspendLayout();
@@ -331,10 +334,45 @@ namespace Reversi
             this.playImageList.Images.SetKeyName(5, "");
             this.playImageList.Images.SetKeyName(6, "");
             // 
+            // checkBox_alphaBeta
+            // 
+            this.checkBox_alphaBeta.AutoSize = true;
+            this.checkBox_alphaBeta.Checked = true;
+            this.checkBox_alphaBeta.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox_alphaBeta.Location = new System.Drawing.Point(75, 0);
+            this.checkBox_alphaBeta.Name = "checkBox_alphaBeta";
+            this.checkBox_alphaBeta.Size = new System.Drawing.Size(153, 21);
+            this.checkBox_alphaBeta.TabIndex = 5;
+            this.checkBox_alphaBeta.Text = "Alpha-Beta Pruning";
+            this.checkBox_alphaBeta.UseVisualStyleBackColor = true;
+            this.checkBox_alphaBeta.CheckedChanged += new System.EventHandler(this.checkBox_alphaBeta_CheckedChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(272, 3);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(104, 17);
+            this.label1.TabIndex = 6;
+            this.label1.Text = "Minimax Depth:";
+            // 
+            // textBox_lookupAheadDepth
+            // 
+            this.textBox_lookupAheadDepth.Location = new System.Drawing.Point(383, 3);
+            this.textBox_lookupAheadDepth.Name = "textBox_lookupAheadDepth";
+            this.textBox_lookupAheadDepth.Size = new System.Drawing.Size(77, 22);
+            this.textBox_lookupAheadDepth.TabIndex = 7;
+            this.textBox_lookupAheadDepth.Text = "6";
+            this.textBox_lookupAheadDepth.TextChanged += new System.EventHandler(this.textBox_lookupAheadDepth_TextChanged);
+            this.textBox_lookupAheadDepth.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox_lookupAheadDepth_KeyPress);
+            // 
             // ReversiForm
             // 
             this.AutoScaleBaseSize = new System.Drawing.Size(6, 15);
             this.ClientSize = new System.Drawing.Size(472, 345);
+            this.Controls.Add(this.textBox_lookupAheadDepth);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.checkBox_alphaBeta);
             this.Controls.Add(this.playToolBar);
             this.Controls.Add(this.boardPanel);
             this.Controls.Add(this.infoPanel);
@@ -397,5 +435,8 @@ namespace Reversi
         // Status display.
         private System.Windows.Forms.Panel statusPanel;
         private System.Windows.Forms.Label statusLabel;
+        private System.Windows.Forms.CheckBox checkBox_alphaBeta;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox textBox_lookupAheadDepth;
     }
 }

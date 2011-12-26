@@ -53,8 +53,8 @@ namespace Reversi
         private int forfeitWeight;
         private int frontierWeight;
         private int stabilityWeight;
-        private int leastStonesWeight;
-        private bool alphaBeta = true;
+        private int stonesWeight;
+        private bool alphaBeta;
 
         // Defines a thread for running the computer move look ahead.
         private Thread calculateComputerMoveThread;
@@ -229,6 +229,10 @@ namespace Reversi
 
             // Initialize the move history.
             this.previousGameState = null;
+
+            // Initialize AI Options
+            checkBox_alphaBeta_CheckedChanged(null, null);
+            textBox_lookupAheadDepth_TextChanged(null, null);
 
             // Initialize the board.
             this.board.SetForNewGame();
@@ -590,9 +594,6 @@ namespace Reversi
         //
         private void CalculateComputerMove()
         {
-            //Initialize lookupAhead value.
-            lookAheadDepth = 9;
-            
             // Find the best available move.
             ComputerMove move = this.GetBestMove(this.board);
 
@@ -687,7 +688,7 @@ namespace Reversi
                                 gameOver = true;
                         }
 
-                        if (depth == lookAheadDepth || gameOver)
+                        if (depth >= lookAheadDepth || gameOver)
                         {
                             // Initialize AI Parameters.
                             if (this.currentColor == Board.White)
@@ -746,9 +747,10 @@ namespace Reversi
                                     frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
                                     mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
                                     stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
-                                    leastStonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount);
+                                    stonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount);
         }
 
+        #region Handle AI Parameters
         //
         // Sets the AI parameters based on the current difficulty setting.
         //
@@ -760,20 +762,18 @@ namespace Reversi
             switch (heuristicFunction)
             {
                 case 1:
-                    this.lookAheadDepth = 9;
-                    this.forfeitWeight = -30;
-                    this.frontierWeight = -10;
-                    this.stabilityWeight = -50;
-                    this.leastStonesWeight = 15;
-                    this.mobilityWeight = -10;
+                    this.forfeitWeight = 30;
+                    this.frontierWeight = 3;
+                    this.stabilityWeight = 50;
+                    this.stonesWeight = -15;
+                    this.mobilityWeight = -8;
                     break;
                 case 2:
-                    this.lookAheadDepth = 9;
-                    this.forfeitWeight = -30;
-                    this.frontierWeight = -14;
-                    this.stabilityWeight = -40;
-                    this.leastStonesWeight = 15;
-                    this.mobilityWeight = -12;
+                    this.forfeitWeight = 0;
+                    this.frontierWeight = 0;
+                    this.stabilityWeight = 0;
+                    this.stonesWeight = 1;
+                    this.mobilityWeight = 0;
                     break;
             }
 
@@ -781,9 +781,37 @@ namespace Reversi
             {
                 this.lookAheadDepth = this.board.EmptyCount;
                 this.forfeitWeight = this.frontierWeight = this.stabilityWeight = 0;
-                this.leastStonesWeight = 1;
+                this.stonesWeight = 1;
             }
         }
+
+        private void checkBox_alphaBeta_CheckedChanged(object sender, EventArgs e)
+        {
+            this.alphaBeta = checkBox_alphaBeta.Checked;
+        }
+
+        private void textBox_lookupAheadDepth_TextChanged(object sender, EventArgs e)
+        {
+            try
+            {
+                if (textBox_lookupAheadDepth.Text == String.Empty)
+                    this.lookAheadDepth = 8;
+                else int.Parse(textBox_lookupAheadDepth.Text.ToString());
+            }
+            catch // safety check, this should never happen!
+            {
+                this.lookAheadDepth = 8;
+            }
+        }
+
+        private void textBox_lookupAheadDepth_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            char Backspace = (Char)8;
+            char Delete = (Char)127;
+            if (!Char.IsDigit(e.KeyChar) && e.KeyChar != Backspace && e.KeyChar != Delete)
+                e.Handled = true;
+        }
+        #endregion
 
         #region Board Display Handlers
         // ===================================================================
