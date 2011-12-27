@@ -713,6 +713,8 @@ namespace Reversi
                             else SetAIParameters(2);
 
                             moveBeingChecked.rank = heuristicFunction(tempBoard, forfeit, color, opponentMobility);
+                            if (Board.isCorner(row, col))
+                                moveBeingChecked.rank += 200;
                         }
                         else
                         {
@@ -760,11 +762,11 @@ namespace Reversi
         int heuristicFunction(Board newBoard, int forfeit, int color, int opponentMobility)
         {
             return
-                forfeitWeight * forfeit +
-                                    frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
-                                    mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
-                                    stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
-                                    stonesWeight * color * (newBoard.WhiteCount - newBoard.BlackCount);
+                this.forfeitWeight * forfeit +
+                this.frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
+                this.mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
+                this.stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
+                this.stonesWeight * (newBoard.WhiteCount - newBoard.BlackCount);
         }
 
         #region Handle AI Parameters
@@ -773,16 +775,13 @@ namespace Reversi
         //
         private void SetAIParameters(int heuristicFunction)
         {
-            // Near the end of the game, when there are relatively few moves
-            // left, set the look-ahead depth to do an exhaustive search.
-
             switch (heuristicFunction)
             {
                 case 1:
                     this.forfeitWeight = 30;
                     this.frontierWeight = -10;
-                    this.stabilityWeight = 50;
-                    this.stonesWeight = -15;
+                    this.stabilityWeight = 25;
+                    this.stonesWeight = -10;
                     this.mobilityWeight = -8;
                     break;
                 case 2:
@@ -794,10 +793,12 @@ namespace Reversi
                     break;
             }
 
+            // Near the end of the game, when there are relatively few moves
+            // left, set the look-ahead depth to do an exhaustive search.
             if (this.board.EmptyCount <= this.lookAheadDepth)
             {
                 this.lookAheadDepth = this.board.EmptyCount;
-                this.forfeitWeight = this.frontierWeight = this.stabilityWeight = 0;
+                this.forfeitWeight = this.frontierWeight = this.stabilityWeight = this.mobilityWeight = 0;
                 this.stonesWeight = 1;
             }
         }

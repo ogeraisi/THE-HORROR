@@ -453,5 +453,10 @@ namespace Reversi
             // All lines are safe so the disc cannot be outflanked.
             return false;
         }
+
+        public static bool isCorner(int row, int col)
+        {
+            return ((row == 0 || row == 9) && (col == 0 || col == 9));
+        }
     }
 }
