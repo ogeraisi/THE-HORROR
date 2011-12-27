@@ -292,12 +292,12 @@ namespace Reversi
                 // For a computer vs. user game, determine who played what color.
                 int computerColor = Board.Empty;
                 int userColor = Board.Empty;
-                if (this.IsComputerPlayer(Board.Black) && !this.IsComputerPlayer(Board.White))
+                if (this.options.ComputerPlaysBlack && !this.options.ComputerPlaysWhite)
                 {
                     computerColor = Board.Black;
                     userColor = Board.White;
                 }
-                else if (this.IsComputerPlayer(Board.White) && !this.IsComputerPlayer(Board.Black))
+                else if (this.options.ComputerPlaysWhite && !this.options.ComputerPlaysBlack)
                 {
                     computerColor = Board.White;
                     userColor = Board.Black;
@@ -309,7 +309,7 @@ namespace Reversi
                 // the computer will never resign so it must be
                 // the user. In a user vs. user game we'll assume it is
                 // the current player.
-                if (this.IsComputerPlayer(Board.Black) && this.IsComputerPlayer(Board.White))
+                if (this.options.ComputerPlaysBlack && this.options.ComputerPlaysWhite)
                     this.statusLabel.Text = "Game aborted.";
                 else
                 {
