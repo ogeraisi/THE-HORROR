@@ -353,6 +353,8 @@ namespace Reversi
                 }
             }
 
+            setNewTurnVisuals();
+
             // If the current color is under computer control,
             // set up for a computer move.
             if (this.IsComputerPlayer(this.currentColor))
@@ -379,6 +381,21 @@ namespace Reversi
                     this.squaresPanel.Refresh();
                 }
             }
+        }
+
+        private void setNewTurnVisuals()
+        {
+            // Update the turn display.
+            if (this.currentColor == Board.Black)
+                this.currentColorPanel.BackColor = Color.Black;
+            else this.currentColorPanel.BackColor = Color.White;
+
+            // Update status display.
+            if (this.IsComputerPlayer(this.currentColor))
+                this.statusLabel.Text = String.Format("{0} is thinking.", this.currentColor == Board.Black ? "Black" : "White");
+            else if (this.IsComputerPlayer(-this.currentColor))
+                this.statusLabel.Text = "Your turn.";
+            else this.statusLabel.Text = String.Format("{0}'s turn.", this.currentColor == Board.Black ? "Black" : "White");
         }
 
         //
