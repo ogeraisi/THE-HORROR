@@ -511,18 +511,9 @@ namespace Reversi
             this.Options.ActiveSquareColor = this.activeColorPanel.BackColor;
             this.Options.MoveIndicatorColor = this.moveIndicatorColorPanel.BackColor;
 
-            if (this.firstMoveBlackRadioButton.Checked)
-                this.Options.FirstMove = Board.Black;
-            else
-                this.Options.FirstMove = Board.White;
-            if (this.blackPlayerComputerRadioButton.Checked)
-                this.Options.ComputerPlaysBlack = true;
-            else
-                this.Options.ComputerPlaysBlack = false;
-            if (this.whitePlayerComputerRadioButton.Checked)
-                this.Options.ComputerPlaysWhite = true;
-            else
-                this.Options.ComputerPlaysWhite = false;
+            this.Options.FirstMove = this.firstMoveBlackRadioButton.Checked ? Board.Black : Board.White;
+            this.Options.ComputerPlaysBlack = this.blackPlayerComputerRadioButton.Checked;
+            this.Options.ComputerPlaysWhite = this.whitePlayerComputerRadioButton.Checked;
         }
 
         // ===================================================================
