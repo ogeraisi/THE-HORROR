@@ -243,22 +243,6 @@ namespace Reversi
             this.StartTurn();
         }
 
-        private void setNewGameVisuals()
-        {
-            // Enable/disable the menu items and tool bar buttons as
-            // appropriate.
-            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = false;
-            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = true;
-
-            // Initialize the information display.
-            this.currentColorTextLabel.Visible = true;
-            this.currentColorPanel.Visible = true;
-
-            // Initialize the status display.
-            this.statusLabel.Text = "";
-            this.statusPanel.Refresh();
-        }
-
         //
         // Ends the current game, optionally by player resignation.
         //
@@ -272,66 +256,6 @@ namespace Reversi
 
             // Update visuals as needed.
             setEndGameVisuals(isResignation);
-        }
-
-        private void setEndGameVisuals(bool isResignation)
-        {
-            // Enable/disable the menu items and tool bar buttons as
-            // appropriate.
-            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = true;
-            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = false;
-
-            // Clear the current player indicator display.
-            this.currentColorPanel.BackColor = Color.Empty;
-            this.currentColorPanel.Visible = false;
-            this.currentColorTextLabel.Visible = false;
-
-            // Handle a resignation.
-            if (isResignation)
-            {
-                // For a computer vs. user game, determine who played what color.
-                int computerColor = Board.Empty;
-                int userColor = Board.Empty;
-                if (this.options.ComputerPlaysBlack && !this.options.ComputerPlaysWhite)
-                {
-                    computerColor = Board.Black;
-                    userColor = Board.White;
-                }
-                else if (this.options.ComputerPlaysWhite && !this.options.ComputerPlaysBlack)
-                {
-                    computerColor = Board.White;
-                    userColor = Board.Black;
-                }
-
-                // For computer vs. computer game,
-                // just update the status message.
-                // In a computer vs. user game,
-                // the computer will never resign so it must be
-                // the user. In a user vs. user game we'll assume it is
-                // the current player.
-                if (this.options.ComputerPlaysBlack && this.options.ComputerPlaysWhite)
-                    this.statusLabel.Text = "Game aborted.";
-                else
-                {
-                    int resigningColor = (computerColor != Board.Empty) ? this.currentColor : userColor;
-
-                    // Update the status message
-                    if (resigningColor == Board.Black)
-                        this.statusLabel.Text = "Black resigns.";
-                    else this.statusLabel.Text = "White resigns.";
-                }
-            }
-
-            // Handle an end game.
-            else
-            {
-                // Update the status message.
-                if (this.board.BlackCount < this.board.WhiteCount)
-                    this.statusLabel.Text = "Black wins.";
-                else if (this.board.WhiteCount < this.board.BlackCount)
-                    this.statusLabel.Text = "White wins.";
-                else this.statusLabel.Text = "Draw.";
-            }
         }
 
         //
@@ -381,21 +305,6 @@ namespace Reversi
                     this.squaresPanel.Refresh();
                 }
             }
-        }
-
-        private void setNewTurnVisuals()
-        {
-            // Update the turn display.
-            if (this.currentColor == Board.Black)
-                this.currentColorPanel.BackColor = Color.Black;
-            else this.currentColorPanel.BackColor = Color.White;
-
-            // Update status display.
-            if (this.IsComputerPlayer(this.currentColor))
-                this.statusLabel.Text = String.Format("{0} is thinking.", this.currentColor == Board.Black ? "Black" : "White");
-            else if (this.IsComputerPlayer(-this.currentColor))
-                this.statusLabel.Text = "Your turn.";
-            else this.statusLabel.Text = String.Format("{0}'s turn.", this.currentColor == Board.Black ? "Black" : "White");
         }
 
         //
@@ -463,6 +372,24 @@ namespace Reversi
             this.moveListView.EnsureVisible(this.moveListView.Items.Count - 1);
         }
 
+        //
+        // Called when a move has been completed (including any animation) to
+        // start the next turn.
+        //
+        private void EndMove()
+        {
+            // Set the game state.
+            this.gameState = ReversiForm.GameState.MoveCompleted;
+
+            // Switch players and start the next turn.
+            this.currentColor *= -1;
+            this.StartTurn();
+        }
+
+        #region Animation Handlers
+        //
+        // Mark squares for animation
+        //
         void setSquaresForAnimation(int row, int col)
         {
             for (int i = 0; i < 10; ++i)
@@ -481,21 +408,6 @@ namespace Reversi
                 }
         }
 
-        //
-        // Called when a move has been completed (including any animation) to
-        // start the next turn.
-        //
-        private void EndMove()
-        {
-            // Set the game state.
-            this.gameState = ReversiForm.GameState.MoveCompleted;
-
-            // Switch players and start the next turn.
-            this.currentColor *= -1;
-            this.StartTurn();
-        }
-
-        #region Animation Handlers
         //
         // Updates the animation of a move.
         //
@@ -709,12 +621,12 @@ namespace Reversi
                         {
                             // Initialize AI Parameters.
                             if (this.currentColor == Board.White)
-                                SetAIParameters(1);
-                            else SetAIParameters(2);
-
-                            moveBeingChecked.rank = heuristicFunction(tempBoard, forfeit, color, opponentMobility);
-                            if (Board.isCorner(row, col))
-                                moveBeingChecked.rank += 200;
+                            {
+                                moveBeingChecked.rank = heuristicFunction1(tempBoard, forfeit, color, opponentMobility);
+                                if (tempBoard.EmptyCount > 0 && Board.isCorner(row, col))
+                                    moveBeingChecked.rank += 200;
+                            }
+                            else moveBeingChecked.rank = heuristicFunction2(tempBoard);
                         }
                         else
                         {
@@ -759,43 +671,40 @@ namespace Reversi
             return bestMove;
         }
 
-        int heuristicFunction(Board newBoard, int forfeit, int color, int opponentMobility)
+        int heuristicFunction1(Board newBoard, int forfeit, int color, int opponentMobility)
         {
+            SetAIParameters();
+
             return
                 this.forfeitWeight * forfeit +
-                this.frontierWeight * (newBoard.BlackFrontierCount - newBoard.WhiteFrontierCount) +
+                this.frontierWeight * (newBoard.WhiteFrontierCount - newBoard.BlackFrontierCount) +
                 this.mobilityWeight * color * (newBoard.GetValidMoveCount(color) - newBoard.GetValidMoveCount(-color)) +
                 this.stabilityWeight * (newBoard.WhiteSafeCount - newBoard.BlackSafeCount) +
                 this.stonesWeight * (newBoard.WhiteCount - newBoard.BlackCount);
+        }
+
+        int heuristicFunction2(Board newBoard)
+        {
+            return newBoard.BlackCount - newBoard.WhiteCount;
         }
 
         #region Handle AI Parameters
         //
         // Sets the AI parameters based on the current difficulty setting.
         //
-        private void SetAIParameters(int heuristicFunction)
+        private void SetAIParameters()
         {
-            switch (heuristicFunction)
-            {
-                case 1:
-                    this.forfeitWeight = 30;
-                    this.frontierWeight = -10;
-                    this.stabilityWeight = 25;
-                    this.stonesWeight = -10;
-                    this.mobilityWeight = -8;
-                    break;
-                case 2:
-                    this.forfeitWeight = 0;
-                    this.frontierWeight = 0;
-                    this.stabilityWeight = 0;
-                    this.stonesWeight = 1;
-                    this.mobilityWeight = 0;
-                    break;
-            }
-
             // Near the end of the game, when there are relatively few moves
             // left, set the look-ahead depth to do an exhaustive search.
-            if (this.board.EmptyCount <= this.lookAheadDepth)
+            if (this.board.EmptyCount > this.lookAheadDepth)
+            {
+                this.forfeitWeight = -30;
+                this.frontierWeight = 10;
+                this.stabilityWeight = 25;
+                this.stonesWeight = 4;
+                this.mobilityWeight = -8;
+            }
+            else
             {
                 this.lookAheadDepth = this.board.EmptyCount;
                 this.forfeitWeight = this.frontierWeight = this.stabilityWeight = this.mobilityWeight = 0;
@@ -906,6 +815,97 @@ namespace Reversi
             SquareControl.NormalBackColor = this.options.BoardColor;
             SquareControl.MoveIndicatorColor = this.options.MoveIndicatorColor;
             SquareControl.ValidMoveBackColor = this.options.ValidMoveColor;
+        }
+
+        private void setNewGameVisuals()
+        {
+            // Enable/disable the menu items and tool bar buttons as
+            // appropriate.
+            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = false;
+            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = true;
+
+            // Initialize the information display.
+            this.currentColorTextLabel.Visible = true;
+            this.currentColorPanel.Visible = true;
+
+            // Initialize the status display.
+            this.statusLabel.Text = "";
+            this.statusPanel.Refresh();
+        }
+
+        private void setNewTurnVisuals()
+        {
+            // Update the turn display.
+            if (this.currentColor == Board.Black)
+                this.currentColorPanel.BackColor = Color.Black;
+            else this.currentColorPanel.BackColor = Color.White;
+
+            // Update status display.
+            if (this.IsComputerPlayer(this.currentColor))
+                this.statusLabel.Text = String.Format("{0} is thinking.", this.currentColor == Board.Black ? "Black" : "White");
+            else if (this.IsComputerPlayer(-this.currentColor))
+                this.statusLabel.Text = "Your turn.";
+            else this.statusLabel.Text = String.Format("{0}'s turn.", this.currentColor == Board.Black ? "Black" : "White");
+        }
+
+        private void setEndGameVisuals(bool isResignation)
+        {
+            // Enable/disable the menu items and tool bar buttons as
+            // appropriate.
+            this.newGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.NewGame].Enabled = true;
+            this.resignGameMenuItem.Enabled = this.playToolBar.Buttons[(int)ReversiForm.ToolBarButton.ResignGame].Enabled = false;
+
+            // Clear the current player indicator display.
+            this.currentColorPanel.BackColor = Color.Empty;
+            this.currentColorPanel.Visible = false;
+            this.currentColorTextLabel.Visible = false;
+
+            // Handle a resignation.
+            if (isResignation)
+            {
+                // For a computer vs. user game, determine who played what color.
+                int computerColor = Board.Empty;
+                int userColor = Board.Empty;
+                if (this.options.ComputerPlaysBlack && !this.options.ComputerPlaysWhite)
+                {
+                    computerColor = Board.Black;
+                    userColor = Board.White;
+                }
+                else if (this.options.ComputerPlaysWhite && !this.options.ComputerPlaysBlack)
+                {
+                    computerColor = Board.White;
+                    userColor = Board.Black;
+                }
+
+                // For computer vs. computer game,
+                // just update the status message.
+                // In a computer vs. user game,
+                // the computer will never resign so it must be
+                // the user. In a user vs. user game we'll assume it is
+                // the current player.
+                if (this.options.ComputerPlaysBlack && this.options.ComputerPlaysWhite)
+                    this.statusLabel.Text = "Game aborted.";
+                else
+                {
+                    int resigningColor = (computerColor != Board.Empty) ? this.currentColor : userColor;
+
+                    // Update the status message
+                    if (resigningColor == Board.Black)
+                        this.statusLabel.Text = "Black resigns.";
+                    else this.statusLabel.Text = "White resigns.";
+                }
+            }
+
+            // Handle an end game.
+            else
+            {
+                // Update the status message.
+                if (this.board.BlackCount < this.board.WhiteCount)
+                    this.statusLabel.Text = "Black wins.";
+                else if (this.board.WhiteCount < this.board.BlackCount)
+                    this.statusLabel.Text = "White wins.";
+                else this.statusLabel.Text = "Draw.";
+            }
         }
         #endregion
 
